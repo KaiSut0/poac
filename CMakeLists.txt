@@ -9,11 +9,28 @@ add_definitions( -fdiagnostics-color -Wall -Werror -Wextra )
 # Check of c++17
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
+#if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+#    # using Clang
+#    if(COMPILER_SUPPORTS_CXX17)
+#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread")
+#    else()
+#        message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++17 support. Please use a different C++ compiler.")
+#    endif()
+#elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+#    # using GCC
+#
+#elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+#    # using Intel C++
+#elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+#    # using Visual Studio C++
+#endif()
+
 if(COMPILER_SUPPORTS_CXX17)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread")
 else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++17 support. Please use a different C++ compiler.")
 endif()
+
 
 # Boost
 find_package(Boost 1.62 REQUIRED COMPONENTS system filesystem timer)

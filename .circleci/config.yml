@@ -2,66 +2,86 @@ version: 2
 general:
   branches:
     ignore:
-      - gh-pages
+    - gh-pages
 jobs:
   gcc_7:
     docker:
-      - image: matken11235/poac:gcc-7
+    - image: matken11235/poac:gcc-7
     steps:
-      - checkout
-      - run: cmake .
-      - run: make
-      - run: CTEST_OUTPUT_ON_FAILURE=TRUE make test
-      - run: ./src/poac --help
+    - checkout
+    - run: cmake .
+    - run: make
+    - run: CTEST_OUTPUT_ON_FAILURE=TRUE make test
+    - run: ./src/poac --help
   gcc_8:
     docker:
-      - image: matken11235/poac:gcc-8
+    - image: matken11235/poac:gcc-8
     steps:
-      - checkout
-      - run: cmake .
-      - run: make
-      - run: CTEST_OUTPUT_ON_FAILURE=TRUE make test
-      - run: ./src/poac --help
+    - checkout
+    - run: cmake .
+    - run: make
+    - run: CTEST_OUTPUT_ON_FAILURE=TRUE make test
+    - run: ./src/poac --help
   gh_pages:
     working_directory: ~/poac/docs
     docker:
-      - image: node:10
+    - image: node:10
+    steps:
+    - checkout
+    - run: git config --global user.name $USERNAME
+    - run: git config --global user.email $EMAIL
+    - run: cp -r .circleci docs
+    - run: cd docs && npm i
+    - run: cd docs && npm run build
+    - run: cd docs && npm run publish
+  clang_5:
+    docker:
+      - image: matken11235/poac:clang-5.0
     steps:
       - checkout
-      - run: git config --global user.name $USERNAME
-      - run: git config --global user.email $EMAIL
-      - run: cp -r .circleci docs
-      - run: cd docs && npm i
-      - run: cd docs && npm run build
-      - run: cd docs && npm run publish
-#  clang_5:
-#    docker:
-#      - image: matken11235/poac:clang-5.0
-#    steps:
-#      - checkout
-#      - run: cmake .
-#      - run: make
-#      - run: CTEST_OUTPUT_ON_FAILURE=TRUE make test
-#      - run: ./src/poac --help
-#  clang_6:
-#    docker:
-#      - image: matken11235/poac:clang-6.0
-#    steps:
-#      - checkout
-#      - run: cmake .
-#      - run: make
-#      - run: CTEST_OUTPUT_ON_FAILURE=TRUE make test
-#      - run: ./src/poac --help
+      - run: cmake .
+      - run: make
+      - run: CTEST_OUTPUT_ON_FAILURE=TRUE make test
+      - run: ./src/poac --help
+  clang_6:
+    docker:
+    - image: matken11235/poac:clang-6.0
+    steps:
+    - checkout
+    - run: cmake .
+    - run: make
+    - run: CTEST_OUTPUT_ON_FAILURE=TRUE make test
+    - run: ./src/poac --help
+  windows-x64:
+    docker:
+    - image: dockcross/windows-x86
+    steps:
+    - checkout
+    - run: git clone --recursive --depth 1 -b boost-1.67.0 https://github.com/boostorg/boost.git
+    - run: cd boost && ./bootstrap.sh && ./b2 install -j2 --prefix=/usr/local/include || echo
+    #    - run: wget http://www.openssl.org/source/openssl-1.0.1i.tar.gz
+    #    - run: tar xzf openssl-1.0.1i.tar.gz
+    #    - run: cd openssl-1.0.1i && ./Configure mingw shared && make && make install
+    #    - run: cp /usr/local/ssl/bin/*.dll /usr/local/bin
+    #    - run: wget http://curl.haxx.se/download/curl-7.37.1.tar.bz2
+    #    - run: tar xjf curl-7.37.1.tar.bz2
+    #    - run: cd curl-7.37.1 && ./configure --with-ssl --enable-shared --disable-static && make && make install
+    #    - run: wget http://curl.haxx.se/ca/cacert.pem && cp cacert.pem /usr/local/bin/curl-ca-bundle.crt
+    - run: cmake .
+    - run: make
+    - run: CTEST_OUTPUT_ON_FAILURE=TRUE make test
+    - run: ./src/poac --help
 
 workflows:
   version: 2
   build_and_test:
     jobs:
-      # GCC
-      - gcc_7
-      - gcc_8
-      - gh_pages
-      # Clang
-#      - clang_5
-#      - clang_6
+    # GCC
+    - gcc_7
+    - gcc_8
+    - gh_pages
+    # Clang
+    - clang_5
+    - clang_6
+    - windows-x64
 
